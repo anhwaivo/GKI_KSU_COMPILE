@@ -22,10 +22,9 @@ on:
         required: true
         type: choice
         options:
-          - Stable(Standard)
-          - Dev(Development)
-          - Other(Custom)
-        default: Dev(Development)
+          - Stable(标准)
+          - Dev(开发)
+        default: Dev(开发)
       version:
         description: 'Custom version name (e.g., characters after 5.15.167 / leave empty for default)'
         required: false
