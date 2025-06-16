@@ -4,7 +4,7 @@ permissions:
   actions: write   # Allows triggering actions
 
 on:
-  workflow_call:  # This allows this workflow to be called from another workflow
+  workflow_call:
     inputs:
       make_release:
         required: true
@@ -23,23 +23,28 @@ on:
         type: string
         default: ""
       use_zram:
-        description: '是否开启增加更多ZRAM算法?'
+        description: 'Enable additional ZRAM algorithms?'
         required: true
         type: boolean
         default: true
       use_kpm:
-        description: '是否开启KPM功能?'
+        description: 'Enable KPM feature?'
         required: true
         type: boolean
         default: true
-  
+      use_susfs:
+        description: 'Enable SUSFS feature?'
+        required: true
+        type: boolean
+        default: true
+
 jobs:
   build-kernel-a13-5-15-kernelsu-susfs:
     strategy:
       fail-fast: false
       matrix:
         include:
-          # 从谷歌提交找到补丁，修复94与104的兼容性问题
+          # Found patches from Google submissions to fix compatibility issues for 94 and 104
           #- sub_level: "74"
           #  os_patch_level: "2023-01"
           #- sub_level: "94"
@@ -68,7 +73,7 @@ jobs:
           #  os_patch_level: "2025-05"  
           #- sub_level: "X"
           #  os_patch_level: "lts"
-    uses: ./.github/workflows/gki-kernel.yml
+    uses: ./.github/workflows/gki_kernel.yml
     secrets: inherit
     with:
       make_release: ${{ inputs.make_release || false }}
@@ -82,3 +87,4 @@ jobs:
       use_zram: ${{ inputs.use_zram }}
       use_kpm: ${{ inputs.use_kpm }}
       supp_op: ${{ inputs.supp_op || false }}
+      use_susfs: ${{ inputs.use_susfs }}
