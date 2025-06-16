@@ -1,0 +1,75 @@
+name: Build Kernel a13-5-15
+
+permissions:
+  contents: write  # Allow writing to repository contents (for pushing tags)
+  actions: write   # Allows triggering actions
+
+on:
+  workflow_dispatch:
+    inputs:
+      kernelsu_variant:
+        description: "Select KernelSU"
+        required: true
+        type: choice
+        options:
+          - Official
+          - Next
+          - MKSU
+          - SukiSU
+        default: SukiSU
+      kernelsu_branch:
+        description: "Select KernelSU Branch"
+        required: true
+        type: choice
+        options:
+          - Stable(Standard)
+          - Dev(Development)
+          - Other(Custom)
+        default: Dev(Development)
+      version:
+        description: 'Custom version name (e.g., characters after 5.15.167 / leave empty for default)'
+        required: false
+        type: string
+      use_zram:
+        description: 'Enable additional ZRAM algorithms?'
+        required: true
+        type: boolean
+        default: true
+      use_kpm:
+        description: 'Enable KPM feature?'
+        required: true
+        type: boolean
+        default: true
+      set_defbbr:
+        description: 'Set BBR as default congestion algorithm? (Experimental)'
+        required: true
+        type: boolean
+        default: false
+      get_manager:
+        description: 'Also fetch the latest KSU manager? (Experimental, disable if errors occur)'
+        required: true
+        type: boolean
+        default: true
+      use_susfs:
+        description: 'Build with SUSFS'
+        required: true
+        type: boolean
+        default: true
+jobs:
+  build-kernel-a13-5-15:
+    uses: ./.github/workflows/kernel-a13-5.15.yml
+    secrets: inherit
+    with:
+      make_release: false
+      kernelsu_variant: ${{ inputs.kernelsu_variant }}
+      kernelsu_branch: ${{ inputs.kernelsu_branch }}
+      version: ${{ inputs.version }}
+      use_zram: ${{ inputs.use_zram }}
+      use_kpm: ${{ inputs.use_kpm }}
+      use_susfs: ${{ inputs.use_susfs }}
+  get-ksu-manager:
+    if: ${{ inputs.get_manager }}
+    uses: ./.github/workflows/get-manager.yml
+    secrets: inherit
+    with:
+      kernelsu_variant: ${{ inputs.kernelsu_variant }}
