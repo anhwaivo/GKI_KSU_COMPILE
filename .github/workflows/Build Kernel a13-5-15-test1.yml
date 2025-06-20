@@ -25,7 +25,7 @@ on:
         options:
           - Stable(标准)
           - Dev(开发)
-        default: Dev(开发)
+        default: Stable(标准)
       version:
         description: 'Custom version name (e.g., characters after 5.15.167 / leave empty for default)'
         required: false
@@ -39,7 +39,7 @@ on:
         description: 'Enable KPM feature?'
         required: true
         type: boolean
-        default: true
+        default: false
       set_defbbr:
         description: 'Set BBR as default congestion algorithm? (Experimental)'
         required: true
@@ -49,7 +49,7 @@ on:
         description: 'Also fetch the latest KSU manager? (Experimental, disable if errors occur)'
         required: true
         type: boolean
-        default: true
+        default: false
       use_susfs:
         description: 'Build with SUSFS'
         required: true
