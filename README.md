@@ -1,4 +1,5 @@
 things i changed :D :
+- add rsuntk's fork
 - made susfs optional
 - translated readme to english
 - made the `kernel-a13-5.15.yml` only build for my phone's kernel version so if u want to fork, change the stuff in `kernel-a13-5.15.yml`
