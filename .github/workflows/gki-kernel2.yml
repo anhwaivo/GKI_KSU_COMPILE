@@ -143,20 +143,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Cloning AnyKernel3 and other dependencies..."
-          ANYKERNEL_BRANCH="gki-2.0"
+          echo "Cloning dependencies..."
           SUSFS_BRANCH="gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}"
-          git clone https://github.com/WildPlusKernel/AnyKernel3.git -b "$ANYKERNEL_BRANCH"
           if ${{ inputs.use_susfs }}; then
             git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "$SUSFS_BRANCH"
           fi
-          git clone https://github.com/WildPlusKernel/kernel_patches.git
-          git clone https://github.com/ShirkNeko/SukiSU_patch.git
+          git clone https://$GITHUB_TOKEN@github.com/WildPlusKernel/kernel_patches.git
+          git clone https://$GITHUB_TOKEN@github.com/ShirkNeko/SukiSU_patch.git
           if ${{ inputs.use_nethunter }}; then
-            echo "Cloning NetHunter kernel patches..."
-            git clone https://$GITHUB_TOKEN@github.com/kali-nethunter/nethunter-kernel-patches.git || {
-              echo "Failed to clone nethunter-kernel-patches, continuing without NetHunter patches..."
-              touch nethunter-kernel-patches/.placeholder
+            echo "Cloning NetHunter kernel builder..."
+            git clone https://gitlab.com/kalilinux/nethunter/build-scripts/kali-nethunter-kernel-builder.git nethunter-kernel-builder || {
+              echo "Failed to clone kali-nethunter-kernel-builder, continuing without NetHunter patches and AnyKernel3..."
+              touch nethunter-kernel-builder/.placeholder
             }
           fi
 
@@ -212,13 +210,13 @@ jobs:
         run: |
           echo "Applying NetHunter patches..."
           cd "$CONFIG/common"
-          for patch in ../../nethunter-kernel-patches/*.patch; do
+          for patch in ../../nethunter-kernel-builder/patches/*.patch; do
             if [ -f "$patch" ]; then
               echo "Applying $patch"
               patch -p1 < "$patch" || echo "Patch $patch failed to apply, continuing..."
             fi
           done
-          echo "Configuring kernel for NetHunter features..."
+          echo "Configuring kernel for NetHunter and Bluetooth features..."
           scripts/config --file .config \
             -e CONFIG_USB_CONFIGFS \
             -e CONFIG_USB_CONFIGFS_F_HID \
@@ -234,7 +232,6 @@ jobs:
             -e CONFIG_BLUETOOTH_HCIUART \
             -e CONFIG_BLUETOOTH_HIDP \
             -e CONFIG_BLUETOOTH_BNEP \
-            -e CONFIG_BLUETOOTH_HCIBFUSB \
             -e CONFIG_BT_HCIBTUSB \
             -e CONFIG_BT_HCIUART_H4 \
             -e CONFIG_BT_HCIUART_BCSP \
@@ -302,11 +299,12 @@ jobs:
           cp arch/arm64/boot/Image ../Image
 
       - name: 打包 AnyKernel3
+        if: ${{ inputs.use_nethunter && ! -f nethunter-kernel-builder/.placeholder }}
         run: |
-          cd AnyKernel3
-          cp ../Image.gz zImage
-          zip -r ../${{ inputs.kernelsu_variant }}_kernel-${{ env.CONFIG }}-AnyKernel3.zip .
-          cp ../${{ inputs.kernelsu_variant }}_kernel-${{ env.CONFIG }}-AnyKernel3.zip ../${{ inputs.android_version }}-${{ inputs.kernel_version }}.${{ inputs.sub_level }}-${{ inputs.os_patch_level }}-AnyKernel3.zip
+          cd nethunter-kernel-builder/anykernel3
+          cp ../../Image.gz zImage
+          zip -r ../../${{ inputs.kernelsu_variant }}_kernel-${{ env.CONFIG }}-AnyKernel3.zip .
+          cp ../../${{ inputs.kernelsu_variant }}_kernel-${{ env.CONFIG }}-AnyKernel3.zip ../../${{ inputs.android_version }}-${{ inputs.kernel_version }}.${{ inputs.sub_level }}-${{ inputs.os_patch_level }}-AnyKernel3.zip
 
       - name: 创建 Boot 映像
         run: |
