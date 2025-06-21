@@ -140,6 +140,8 @@ jobs:
           echo "REPO=$GITHUB_WORKSPACE/./git-repo/repo" >> $GITHUB_ENV
 
       - name: 克隆 AnyKernel3 和其他依赖项
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Cloning AnyKernel3 and other dependencies..."
           ANYKERNEL_BRANCH="gki-2.0"
@@ -151,7 +153,11 @@ jobs:
           git clone https://github.com/WildPlusKernel/kernel_patches.git
           git clone https://github.com/ShirkNeko/SukiSU_patch.git
           if ${{ inputs.use_nethunter }}; then
-            git clone https://github.com/kali-nethunter/nethunter-kernel-patches.git
+            echo "Cloning NetHunter kernel patches..."
+            git clone https://$GITHUB_TOKEN@github.com/kali-nethunter/nethunter-kernel-patches.git || {
+              echo "Failed to clone nethunter-kernel-patches, continuing without NetHunter patches..."
+              touch nethunter-kernel-patches/.placeholder
+            }
           fi
 
       - name: 设置 CONFIG 环境变量
@@ -223,7 +229,16 @@ jobs:
             -e CONFIG_NETFILTER_XT_TARGET_NFLOG \
             -e CONFIG_WIRELESS \
             -e CONFIG_WIRELESS_EXT \
-            -e CONFIG_CFG80211_WEXT
+            -e CONFIG_CFG80211_WEXT \
+            -e CONFIG_BLUETOOTH \
+            -e CONFIG_BLUETOOTH_HCIUART \
+            -e CONFIG_BLUETOOTH_HIDP \
+            -e CONFIG_BLUETOOTH_BNEP \
+            -e CONFIG_BLUETOOTH_HCIBFUSB \
+            -e CONFIG_BT_HCIBTUSB \
+            -e CONFIG_BT_HCIUART_H4 \
+            -e CONFIG_BT_HCIUART_BCSP \
+            -e CONFIG_BT_HCIUART_ATH3K
           make olddefconfig
 
       - name: 确定 KernelSU 的分支
