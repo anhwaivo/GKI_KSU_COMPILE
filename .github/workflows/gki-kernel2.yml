@@ -299,8 +299,12 @@ jobs:
           cp arch/arm64/boot/Image ../Image
 
       - name: 打包 AnyKernel3
-        if: ${{ inputs.use_nethunter && ! -f nethunter-kernel-builder/.placeholder }}
+        if: ${{ inputs.use_nethunter }}
         run: |
+          if [ -f nethunter-kernel-builder/.placeholder ]; then
+            echo "NetHunter kernel builder clone failed, skipping AnyKernel3 packaging..."
+            exit 0
+          fi
           cd nethunter-kernel-builder/anykernel3
           cp ../../Image.gz zImage
           zip -r ../../${{ inputs.kernelsu_variant }}_kernel-${{ env.CONFIG }}-AnyKernel3.zip .
