@@ -1,0 +1,69 @@
+name: Android 13 5.15
+permissions:
+  contents: write  # Allow writing to repository contents (for pushing tags)
+  actions: write   # Allows triggering actions
+
+on:
+  workflow_call:
+    inputs:
+      make_release:
+        required: true
+        type: boolean
+        default: true
+      kernelsu_variant:
+        required: true
+        type: string
+        default: Next
+      kernelsu_branch:
+        required: true
+        type: string
+        default: Stable
+      version:
+        required: false
+        type: string
+        default: ""
+      use_zram:
+        description: 'Enable additional ZRAM algorithms?'
+        required: true
+        type: boolean
+        default: true
+      use_kpm:
+        description: 'Enable KPM feature?'
+        required: true
+        type: boolean
+        default: true
+      use_susfs:
+        description: 'Enable SUSFS'
+        required: true
+        type: boolean
+        default: true
+      use_nethunter:
+        description: 'Enable NetHunter features?'
+        required: true
+        type: boolean
+        default: false
+
+jobs:
+  build-kernel-a13-5-15-kernelsu-susfs:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - sub_level: "149"
+            os_patch_level: "2024-07"
+    uses: ./.github/workflows/gki-kernel2.yml
+    secrets: inherit
+    with:
+      make_release: ${{ inputs.make_release || false }}
+      android_version: "android13"
+      kernel_version: "5.15"
+      sub_level: ${{ matrix.sub_level }}
+      os_patch_level: ${{ matrix.os_patch_level }}
+      kernelsu_variant: ${{ inputs.kernelsu_variant || 'Next' }}
+      kernelsu_branch: ${{ inputs.kernelsu_branch || 'Dev' }}
+      version: ${{ inputs.version || '' }}
+      use_zram: ${{ inputs.use_zram }}
+      use_kpm: ${{ inputs.use_kpm }}
+      supp_op: ${{ inputs.supp_op || false }}
+      use_susfs: ${{ inputs.use_susfs }}
+      use_nethunter: ${{ inputs.use_nethunter }}
